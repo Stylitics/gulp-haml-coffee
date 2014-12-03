@@ -2,6 +2,8 @@ var map = require('map-stream');
 var rext = require('replace-ext');
 var hamlc = require('haml-coffee');
 var gutil = require('gulp-util');
+var path  = require('path');
+var _     = require('underscore')
 
 module.exports = function(options) {
   if(!options) options = {};
@@ -16,6 +18,8 @@ module.exports = function(options) {
     var output;
     try {
       if (options.js) {
+        options.name = buildTemplateName(file.path, options.pathRelativeTo);
+
         output = hamlc.template(file.contents.toString("utf8"), options.name, options.namespace, options);
         file.path = rext(file.path, ".js");
       } else {
@@ -32,6 +36,18 @@ module.exports = function(options) {
     file.contents = new Buffer(output);
 
     cb(null, file);
+  }
+
+  function buildTemplateName(filename, pathRelativeTo) {
+    var defaultPath = '';
+
+    defaultPath = path.relative(pathRelativeTo, path.dirname(filename));
+
+    if (defaultPath !== '') {
+      defaultPath += '/';
+    }
+
+    return defaultPath + path.basename(filename, path.extname(filename));
   }
 
   // Return a stream
